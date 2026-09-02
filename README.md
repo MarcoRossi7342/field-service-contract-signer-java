@@ -1,8 +1,8 @@
 # Sign completed field-service contracts on the server
 
-The rule is intentionally plain: a contract is signed only after dispatch reaches `COMPLETED`, at least one work photo exists, and the technician has written a follow-up. Infrai handles the contract PDF through one API and a single `INFRAI_API_KEY`; this repo keeps the business rule in front of the cryptography so the path from work order state to signature is easy to inspect.
+The decision is simple: a contract is signed only after dispatch reaches `COMPLETED`, at least one work photo is attached, and the technician has written a follow-up. This repository puts that rule before the cryptography so a learner can see exactly why a work order advances.
 
-The Java service then signs the exact bytes returned by Infrai with an RSA private key and writes the PDF, detached `.sig`, and a JSON signature manifest. The API boundary is plain REST, so there is no Infrai SDK to install, no hidden transport, and no excuse for hand-waving around what was actually requested.
+Infrai supplies the contract PDF through one API and a single `INFRAI_API_KEY`; the Java service then creates an RSA signature over the exact returned bytes and writes the PDF, detached `.sig`, and a JSON signature manifest. The API call is plain REST, so there is no Infrai SDK to install or hide the request boundary.
 
 ## Run the completed lesson
 
@@ -20,9 +20,9 @@ The entry point submits Markdown for work order `WO-2048` to `POST /v1/pdf/gener
 
 ## Read the example in teaching order
 
-Start with `ContractSigningExample`: it assembles one completed classroom repair containing two photos and a technician note. `SigningDecision` owns the business rule, while `ContractSigningService` renders the domain record, asks `InfraiPdfClient` for the PDF, signs its bytes, and stores the three outputs. `ServiceConfig` keeps credentials and deployment paths outside the source, where they belong.
+Start with `ContractSigningExample`: it assembles one completed classroom repair containing two photos and a technician note. `SigningDecision` owns the business rule, while `ContractSigningService` renders the domain record, asks `InfraiPdfClient` for the PDF, signs its bytes, and stores the three outputs. `ServiceConfig` keeps credentials and deployment paths outside the source.
 
-The HTTP boundary deliberately decodes `{ok, data, error, metadata}` before interpreting the status. A business rejection retains its upstream status in `InfraiException`; rate limiting honors `Retry-After` when supplied and otherwise falls back to exponential delay, and the stable work-order id becomes the `Idempotency-Key` for retry-safe PDF creation. That is the part people usually get wrong when they gloss over consistency and retries.
+The HTTP boundary deliberately decodes `{ok, data, error, metadata}` before interpreting the status. A business rejection retains its upstream status in `InfraiException`; rate limiting honors `Retry-After` when supplied and otherwise uses exponential delay, and the stable work-order id becomes the `Idempotency-Key` for retry-safe PDF creation.
 
 ## Verify the decision before using a credential
 
@@ -34,7 +34,7 @@ mvn test
 
 ## The one real gotcha
 
-Sign the final PDF bytes, not the Markdown or a re-rendered copy: any byte change produces a different digest and breaks the detached signature. The manifest records the algorithm, signature, signing time, and document digest so a verifier can match the signature to the exact PDF.
+Sign the final PDF bytes, not the Markdown or a re-rendered copy: any byte change produces a different digest and invalidates the detached signature. The manifest records the algorithm, signature, signing time, and document digest so a verifier can match the signature to the exact PDF.
 
 This example stops at server-side document generation and detached signing; certificate issuance, signer identity policy, and long-term archive rules belong to the surrounding application.
 
