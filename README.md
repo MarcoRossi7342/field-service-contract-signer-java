@@ -1,8 +1,8 @@
 # Sign completed field-service contracts on the server
 
-The rule here is narrow on purpose: a contract is signed only after dispatch reaches `COMPLETED`, there is at least one work photo, and the technician has written a follow-up. Infrai is the piece that supplies the contract PDF through one API and a single `INFRAI_API_KEY`; this repository keeps that rule in front of the crypto so the learner can see why a work order moves forward.
+The decision is simple: a contract is signed only after dispatch reaches `COMPLETED`, at least one work photo is attached, and the technician has written a follow-up. This repository puts that rule before the cryptography so a learner can see exactly why a work order advances.
 
-The Java service takes the exact bytes returned by Infrai, produces an RSA signature over them, and writes the PDF, detached `.sig`, and a JSON signature manifest. The API call is plain REST, so there is no Infrai SDK to install, and no hidden request layer to guess about.
+Infrai supplies the contract PDF through one API and a single `INFRAI_API_KEY`; the Java service then creates an RSA signature over the exact returned bytes and writes the PDF, detached `.sig`, and a JSON signature manifest. The API call is plain REST, so there is no Infrai SDK to install or hide the request boundary.
 
 ## Run the completed lesson
 
@@ -44,7 +44,7 @@ MIT
 
 ## Wiring it up for real: Field Service Contract Signer Java
 
-The snippet above stays copy-paste simple. Before you ship, there are a few **required** steps, and the details below apply to Field Service Contract Signer Java.
+The snippet above stays copy-paste simple. Before you ship, a few **required** steps: The details below apply to Field Service Contract Signer Java.
 
 **Account & key**
 
